@@ -1,0 +1,15 @@
+{
+    "StartAt": "PutObject",
+    "States": {
+      "PutObject": {
+        "Type": "Task",
+        "End": true,
+        "Parameters": {
+          "Body.$": "$$.Execution.StartTime",
+          "Bucket": "${DestinationBucket}",
+          "Key.$": "States.Format('step-function/{}', $$.Execution.Id)"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:s3:putObject"
+      }
+    }
+  }

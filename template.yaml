@@ -1,0 +1,124 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  serverless-latency
+
+  Sample SAM Template for serverless-latency
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+    Tracing: Active
+  Api:
+    TracingEnabled: true
+
+Resources:
+  DestinationBucket:
+    Type: AWS::S3::Bucket
+
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: state-machine
+      DefinitionBody:
+        info:
+          version: "1.0"
+          title: "serverless-latency-step-function"
+        paths:
+          /invoke-state-machine:
+            get:
+              x-amazon-apigateway-integration:
+                responses:
+                  "200":
+                    statusCode: "200"
+                  "400":
+                    statusCode: "400"
+                uri: !Sub >-
+                  arn:${AWS::Partition}:apigateway:${AWS::Region}:states:action/StartSyncExecution
+                httpMethod: POST
+                requestTemplates:
+                  application/json: !Sub >-
+                    {"input": "$util.escapeJavaScript($input.json('$'))", "stateMachineArn": "${S3LoggerStateMachine}"}
+                credentials:
+                  Fn::GetAtt: [HttpApiRole, Arn]
+                type: aws
+              responses:
+                "200":
+                  description: OK
+                "400":
+                  description: Bad Request
+        openapi: 3.0.1
+        x-amazon-apigateway-cors:
+          allowMethods:
+            - "POST"
+          allowHeaders:
+            - "content-type"
+          maxAge: 0
+          allowCredentials: false
+          allowOrigins:
+            - "*"
+        x-amazon-apigateway-importexport-version: "1.0"
+
+  S3LoggerLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3-logger/
+      Handler: app.lambdaHandler
+      Runtime: nodejs14.x
+      Architectures:
+        - arm64
+      Events:
+        InvokeLambda:
+          Type: Api
+          Properties:
+            Path: /invoke-lambda
+            Method: GET
+      Environment:
+        Variables:
+          DestinationBucketName: !Ref DestinationBucket
+      Policies:
+        - S3WritePolicy:
+            BucketName: !Ref DestinationBucket
+
+  S3LoggerStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      DefinitionUri: statemachine/s3-logger.asl.json
+      Tracing:
+        Enabled: true
+      DefinitionSubstitutions:
+        DestinationBucket: !Ref DestinationBucket
+      Policies:
+        - S3WritePolicy:
+            BucketName: !Ref DestinationBucket
+      Type: EXPRESS
+
+  HttpApiRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: AllowSFNExec
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: "states:StartSyncExecution"
+                Resource: !Ref S3LoggerStateMachine
+
+Outputs:
+  ApiLambdaEndpoint:
+    Description: "API Gateway endpoint URL for prod stage for the s3-logger function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/invoke-lambda/"
+  ApiStatemachineEndpoint:
+    Description: "API Gateway endpoint URL for prod stage for the s3-logger SYNC satemachine"
+    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.amazonaws.com/state-machine/invoke-state-machine/"
