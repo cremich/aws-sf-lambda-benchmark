@@ -25,6 +25,11 @@ exports.lambdaHandler = async (event, context) => {
       Body: new Date().toISOString(),
     }).promise();
 
+    await S3.getObject({
+      Bucket: bucketName,
+      Key: key,
+    }).promise();
+
     const response = {
       statusCode: 200,
       isBase64Encoded: false,

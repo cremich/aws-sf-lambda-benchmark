@@ -78,7 +78,7 @@ Resources:
         Variables:
           DestinationBucketName: !Ref DestinationBucket
       Policies:
-        - S3WritePolicy:
+        - S3CrudPolicy:
             BucketName: !Ref DestinationBucket
 
   S3LoggerStateMachine:
@@ -90,7 +90,7 @@ Resources:
       DefinitionSubstitutions:
         DestinationBucket: !Ref DestinationBucket
       Policies:
-        - S3WritePolicy:
+        - S3CrudPolicy:
             BucketName: !Ref DestinationBucket
       Type: EXPRESS
 
