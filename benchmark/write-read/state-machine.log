@@ -1,0 +1,59 @@
+This is ApacheBench, Version 2.3 <$Revision: 1879490 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking hash.execute-api.eu-central-1.amazonaws.com (be patient)
+Completed 1500 requests
+Completed 3000 requests
+Completed 4500 requests
+Completed 6000 requests
+Completed 7500 requests
+Completed 9000 requests
+Completed 10500 requests
+Completed 12000 requests
+Completed 13500 requests
+Completed 15000 requests
+Finished 15000 requests
+
+
+Server Software:        
+Server Hostname:        hash.execute-api.eu-central-1.amazonaws.com
+Server Port:            443
+SSL/TLS Protocol:       TLSv1.2,ECDHE-RSA-AES128-GCM-SHA256,2048,128
+Server Temp Key:        ECDH X25519 253 bits
+TLS Server Name:        hash.execute-api.eu-central-1.amazonaws.com
+
+Document Path:          /state-machine/invoke-state-machine/
+Document Length:        1077 bytes
+
+Concurrency Level:      1
+Time taken for tests:   1969.256 seconds
+Complete requests:      15000
+Failed requests:        2842
+   (Connect: 0, Receive: 0, Length: 2842, Exceptions: 0)
+Total transferred:      23276616 bytes
+HTML transferred:       16151616 bytes
+Requests per second:    7.62 [#/sec] (mean)
+Time per request:       131.284 [ms] (mean)
+Time per request:       131.284 [ms] (mean, across all concurrent requests)
+Transfer rate:          11.54 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:       29   38   8.7     38     429
+Processing:    57   92  78.2     85    5487
+Waiting:       56   92  78.2     85    5487
+Total:         90  131  79.0    123    5526
+
+Percentage of the requests served within a certain time (ms)
+  50%    123
+  66%    130
+  75%    135
+  80%    140
+  90%    153
+  95%    172
+  98%    205
+  99%    249
+ 100%   5526 (longest request)
+
+ 
